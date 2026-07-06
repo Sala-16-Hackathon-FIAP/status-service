@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: status-service
+  labels:
+    app: status-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: status-service
+  template:
+    metadata:
+      labels:
+        app: status-service
+    spec:
+      containers:
+        - name: status-service
+          image: STATUS_SERVICE_IMAGE
+          ports:
+            - containerPort: 8084
+          env:
+            - name: DB_URL
+              valueFrom:
+                secretKeyRef:
+                  name: status-service-secrets
+                  key: db-url
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: status-service-secrets
+                  key: db-username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: status-service-secrets
+                  key: db-password
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: status-service-secrets
+                  key: jwt-secret
+            - name: RABBITMQ_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: status-service-secrets
+                  key: rabbitmq-host
+            - name: RABBITMQ_USER
+              valueFrom:
+                secretKeyRef:
+                  name: status-service-secrets
+                  key: rabbitmq-user
+            - name: RABBITMQ_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: status-service-secrets
+                  key: rabbitmq-pass
+            - name: NEW_RELIC_LICENSE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: status-service-secrets
+                  key: new-relic-license-key
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8084
+            initialDelaySeconds: 40
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8084
+            initialDelaySeconds: 20
+            periodSeconds: 5
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
