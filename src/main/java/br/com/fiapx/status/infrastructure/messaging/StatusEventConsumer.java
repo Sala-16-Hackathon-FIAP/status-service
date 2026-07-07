@@ -33,13 +33,13 @@ public class StatusEventConsumer {
 
     @PostConstruct
     public void registerConsumers() {
-        consumer.consume(new TopicBinding(EXCHANGE, QUEUE_UPLOAD, "video.upload.completed"),
+        consumer.consume(new TopicBinding(EXCHANGE, "video.upload.completed", QUEUE_UPLOAD),
                 VideoUploadCompletedEvent.class, this::handleUploadCompleted);
-        consumer.consume(new TopicBinding(EXCHANGE, QUEUE_STARTED, "video.processing.started"),
+        consumer.consume(new TopicBinding(EXCHANGE, "video.processing.started", QUEUE_STARTED),
                 ProcessingJobEvent.class, this::handleProcessingStarted);
-        consumer.consume(new TopicBinding(EXCHANGE, QUEUE_COMPLETED, "video.processing.completed"),
+        consumer.consume(new TopicBinding(EXCHANGE, "video.processing.completed", QUEUE_COMPLETED),
                 ProcessingJobEvent.class, this::handleProcessingCompleted);
-        consumer.consume(new TopicBinding(EXCHANGE, QUEUE_FAILED, "video.processing.failed"),
+        consumer.consume(new TopicBinding(EXCHANGE, "video.processing.failed", QUEUE_FAILED),
                 ProcessingJobEvent.class, this::handleProcessingFailed);
     }
 
