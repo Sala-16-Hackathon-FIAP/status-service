@@ -1,7 +1,9 @@
 package br.com.fiapx.status.application.service;
 
 import br.com.fiapx.status.application.port.input.StatusUseCase;
+import br.com.fiapx.status.application.port.output.DownloadPort;
 import br.com.fiapx.status.application.port.output.JobStatusRepositoryPort;
+import br.com.fiapx.status.domain.exception.DownloadNotReadyException;
 import br.com.fiapx.status.domain.exception.JobStatusNotFoundException;
 import br.com.fiapx.status.domain.model.JobStatus;
 import br.com.fiapx.status.domain.model.JobStatusType;
@@ -16,9 +18,11 @@ import java.util.UUID;
 public class StatusService implements StatusUseCase {
 
     private final JobStatusRepositoryPort repository;
+    private final DownloadPort downloadPort;
 
-    public StatusService(JobStatusRepositoryPort repository) {
+    public StatusService(JobStatusRepositoryPort repository, DownloadPort downloadPort) {
         this.repository = repository;
+        this.downloadPort = downloadPort;
     }
 
     @Override
@@ -53,5 +57,17 @@ public class StatusService implements StatusUseCase {
     @Override
     public List<JobStatus> getUserStatuses(UUID userId) {
         return repository.findByUserId(userId);
+    }
+
+    @Override
+    public String getDownloadUrl(UUID uploadId, UUID userId) {
+        JobStatus status = getStatusByUploadId(uploadId);
+        if (!status.userId().equals(userId)) {
+            throw new JobStatusNotFoundException(uploadId);
+        }
+        if (status.status() != JobStatusType.PROCESSING_COMPLETED || status.resultS3Key() == null) {
+            throw new DownloadNotReadyException(uploadId, status.status().name());
+        }
+        return downloadPort.generatePresignedUrl(status.resultS3Key());
     }
 }

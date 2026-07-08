@@ -32,6 +32,14 @@ server:
 jwt:
   secret: ${JWT_SECRET:ZmlhcHhzZWNyZXRrZXlmb3Jqd3RhdXRoZW50aWNhdGlvbjIwMjU=}
 
+aws:
+  region: ${AWS_REGION:us-east-1}
+  s3:
+    bucket-name: ${S3_BUCKET_NAME:fiapx-videos}
+    endpoint: ${S3_ENDPOINT:http://localhost:4566}
+    path-style-access: ${S3_PATH_STYLE:true}
+    presigned-url-expiration-minutes: ${S3_PRESIGNED_EXPIRATION:15}
+
 management:
   endpoints:
     web:
