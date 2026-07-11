@@ -61,6 +61,17 @@ spec:
                   name: status-service-secrets
                   key: new-relic-license-key
                   optional: true
+            - name: S3_BUCKET_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: status-service-secrets
+                  key: s3-bucket
+            - name: AWS_REGION
+              value: "us-east-1"
+            - name: S3_ENDPOINT
+              value: ""
+            - name: S3_PATH_STYLE
+              value: "false"
           livenessProbe:
             httpGet:
               path: /actuator/health

@@ -129,6 +129,7 @@ jobs:
             --from-literal=rabbitmq-host="rabbitmq.messaging.svc.cluster.local" \
             --from-literal=rabbitmq-user="${{ secrets.RABBITMQ_USERNAME }}" \
             --from-literal=rabbitmq-pass="${{ secrets.RABBITMQ_PASSWORD }}" \
+            --from-literal=s3-bucket="${{ secrets.S3_BUCKET_NAME }}" \
             --from-literal=new-relic-license-key="${{ secrets.NEW_RELIC_LICENSE_KEY }}" \
             --dry-run=client -o yaml | kubectl apply -f -
 
