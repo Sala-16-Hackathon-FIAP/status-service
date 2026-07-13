@@ -35,9 +35,10 @@ public class StatusController {
     }
 
     @GetMapping("/uploads/{uploadId}")
-    @Operation(summary = "Get job status by upload ID")
-    public JobStatusResponse getStatus(@PathVariable UUID uploadId) {
-        return JobStatusResponse.fromDomain(statusUseCase.getStatusByUploadId(uploadId));
+    @Operation(summary = "Get job status by upload ID (only for the owner)")
+    public JobStatusResponse getStatus(@PathVariable UUID uploadId, Authentication auth) {
+        UUID userId = (UUID) auth.getPrincipal();
+        return JobStatusResponse.fromDomain(statusUseCase.getStatusByUploadId(uploadId, userId));
     }
 
     @GetMapping("/uploads/{uploadId}/download")

@@ -49,9 +49,14 @@ public class StatusService implements StatusUseCase {
     }
 
     @Override
-    public JobStatus getStatusByUploadId(UUID uploadId) {
-        return repository.findByUploadId(uploadId)
+    public JobStatus getStatusByUploadId(UUID uploadId, UUID userId) {
+        JobStatus status = repository.findByUploadId(uploadId)
                 .orElseThrow(() -> new JobStatusNotFoundException(uploadId));
+        if (!status.userId().equals(userId)) {
+            // Do not reveal that another user's upload exists.
+            throw new JobStatusNotFoundException(uploadId);
+        }
+        return status;
     }
 
     @Override
@@ -61,10 +66,7 @@ public class StatusService implements StatusUseCase {
 
     @Override
     public String getDownloadUrl(UUID uploadId, UUID userId) {
-        JobStatus status = getStatusByUploadId(uploadId);
-        if (!status.userId().equals(userId)) {
-            throw new JobStatusNotFoundException(uploadId);
-        }
+        JobStatus status = getStatusByUploadId(uploadId, userId);
         if (status.status() != JobStatusType.PROCESSING_COMPLETED || status.resultS3Key() == null) {
             throw new DownloadNotReadyException(uploadId, status.status().name());
         }

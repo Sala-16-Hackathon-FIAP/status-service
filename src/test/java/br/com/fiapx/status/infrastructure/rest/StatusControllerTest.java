@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
@@ -80,7 +81,7 @@ class StatusControllerTest {
 
     @Test
     void getStatus_shouldReturnStatus_whenFound() throws Exception {
-        when(statusUseCase.getStatusByUploadId(uploadId)).thenReturn(sampleStatus);
+        when(statusUseCase.getStatusByUploadId(eq(uploadId), any())).thenReturn(sampleStatus);
 
         mockMvc.perform(get("/api/v1/status/uploads/{id}", uploadId)
                         .with(authentication(userAuth())))
@@ -91,7 +92,7 @@ class StatusControllerTest {
 
     @Test
     void getStatus_shouldReturn404_whenNotFound() throws Exception {
-        when(statusUseCase.getStatusByUploadId(any()))
+        when(statusUseCase.getStatusByUploadId(any(), any()))
                 .thenThrow(new JobStatusNotFoundException(UUID.randomUUID()));
 
         mockMvc.perform(get("/api/v1/status/uploads/{id}", UUID.randomUUID())
