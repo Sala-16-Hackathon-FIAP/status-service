@@ -95,19 +95,29 @@ class StatusServiceTest {
     }
 
     @Test
-    void getStatusByUploadId_shouldReturnStatus_whenExists() {
+    void getStatusByUploadId_shouldReturnStatus_whenExistsAndOwned() {
         JobStatus status = new JobStatus(UUID.randomUUID(), jobId, uploadId, userId, "v.mp4",
                 JobStatusType.PROCESSING_COMPLETED, "key.zip", null, LocalDateTime.now(), LocalDateTime.now());
         when(repository.findByUploadId(uploadId)).thenReturn(Optional.of(status));
 
-        JobStatus found = statusService.getStatusByUploadId(uploadId);
+        JobStatus found = statusService.getStatusByUploadId(uploadId, userId);
         assertThat(found).isEqualTo(status);
     }
 
     @Test
     void getStatusByUploadId_shouldThrow_whenNotFound() {
         when(repository.findByUploadId(any())).thenReturn(Optional.empty());
-        assertThatThrownBy(() -> statusService.getStatusByUploadId(UUID.randomUUID()))
+        assertThatThrownBy(() -> statusService.getStatusByUploadId(UUID.randomUUID(), userId))
+                .isInstanceOf(JobStatusNotFoundException.class);
+    }
+
+    @Test
+    void getStatusByUploadId_shouldThrow_whenOwnedByAnotherUser() {
+        JobStatus status = new JobStatus(UUID.randomUUID(), jobId, uploadId, userId, "v.mp4",
+                JobStatusType.PROCESSING_COMPLETED, "key.zip", null, LocalDateTime.now(), LocalDateTime.now());
+        when(repository.findByUploadId(uploadId)).thenReturn(Optional.of(status));
+
+        assertThatThrownBy(() -> statusService.getStatusByUploadId(uploadId, UUID.randomUUID()))
                 .isInstanceOf(JobStatusNotFoundException.class);
     }
 

@@ -8,7 +8,7 @@ import java.util.UUID;
 
 public interface StatusUseCase {
     JobStatus upsertStatus(UUID uploadId, UUID userId, String filename, JobStatusType status, String jobId, String resultKey, String error);
-    JobStatus getStatusByUploadId(UUID uploadId);
+    JobStatus getStatusByUploadId(UUID uploadId, UUID userId);
     List<JobStatus> getUserStatuses(UUID userId);
     String getDownloadUrl(UUID uploadId, UUID userId);
 }
