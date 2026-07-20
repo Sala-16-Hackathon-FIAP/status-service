@@ -55,6 +55,13 @@ spec:
                 secretKeyRef:
                   name: status-service-secrets
                   key: rabbitmq-pass
+            - name: S3_BUCKET_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: status-service-secrets
+                  key: s3-bucket
+            - name: AWS_REGION
+              value: "us-east-1"
             - name: NEW_RELIC_LICENSE_KEY
               valueFrom:
                 secretKeyRef:
