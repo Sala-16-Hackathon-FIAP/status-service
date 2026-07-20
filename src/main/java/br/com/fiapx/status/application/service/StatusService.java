@@ -7,8 +7,10 @@ import br.com.fiapx.status.domain.exception.DownloadNotReadyException;
 import br.com.fiapx.status.domain.exception.JobStatusNotFoundException;
 import br.com.fiapx.status.domain.model.JobStatus;
 import br.com.fiapx.status.domain.model.JobStatusType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,6 +18,8 @@ import java.util.UUID;
 
 @Service
 public class StatusService implements StatusUseCase {
+
+    private static final Logger log = LoggerFactory.getLogger(StatusService.class);
 
     private final JobStatusRepositoryPort repository;
     private final DownloadPort downloadPort;
@@ -26,9 +30,18 @@ public class StatusService implements StatusUseCase {
     }
 
     @Override
-    @Transactional
     public JobStatus upsertStatus(UUID uploadId, UUID userId, String filename,
                                    JobStatusType statusType, String jobId, String resultKey, String error) {
+        try {
+            return doUpsert(uploadId, userId, filename, statusType, jobId, resultKey, error);
+        } catch (DataIntegrityViolationException e) {
+            log.debug("Concurrent insert for uploadId={}, retrying as update", uploadId);
+            return doUpsert(uploadId, userId, filename, statusType, jobId, resultKey, error);
+        }
+    }
+
+    private JobStatus doUpsert(UUID uploadId, UUID userId, String filename,
+                                JobStatusType statusType, String jobId, String resultKey, String error) {
         Optional<JobStatus> existing = repository.findByUploadId(uploadId);
         JobStatus jobStatus;
 
