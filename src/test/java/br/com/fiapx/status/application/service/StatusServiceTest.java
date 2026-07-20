@@ -10,6 +10,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -109,6 +110,27 @@ class StatusServiceTest {
         when(repository.findByUploadId(any())).thenReturn(Optional.empty());
         assertThatThrownBy(() -> statusService.getStatusByUploadId(UUID.randomUUID()))
                 .isInstanceOf(JobStatusNotFoundException.class);
+    }
+
+    @Test
+    void upsertStatus_shouldRetryOnConcurrentInsert() {
+        JobStatus existing = new JobStatus(UUID.randomUUID(), null, uploadId, userId, "v.mp4",
+                JobStatusType.UPLOAD_COMPLETED, null, null, LocalDateTime.now(), LocalDateTime.now());
+
+        when(repository.findByUploadId(uploadId))
+                .thenReturn(Optional.empty())
+                .thenReturn(Optional.of(existing));
+        when(repository.save(any()))
+                .thenThrow(new DataIntegrityViolationException("duplicate key"))
+                .thenAnswer(inv -> inv.getArgument(0));
+
+        JobStatus result = statusService.upsertStatus(uploadId, userId, "v.mp4",
+                JobStatusType.PROCESSING_COMPLETED, jobId.toString(), "processed/key.zip", null);
+
+        assertThat(result.status()).isEqualTo(JobStatusType.PROCESSING_COMPLETED);
+        assertThat(result.resultS3Key()).isEqualTo("processed/key.zip");
+        verify(repository, times(2)).findByUploadId(uploadId);
+        verify(repository, times(2)).save(any());
     }
 
     @Test
