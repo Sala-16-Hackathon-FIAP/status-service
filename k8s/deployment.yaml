@@ -60,6 +60,10 @@ spec:
                 secretKeyRef:
                   name: status-service-secrets
                   key: s3-bucket
+            - name: S3_ENDPOINT
+              value: ""
+            - name: S3_PATH_STYLE
+              value: "false"
             - name: AWS_REGION
               value: "us-east-1"
             - name: AWS_ACCESS_KEY_ID
