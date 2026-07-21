@@ -2,6 +2,10 @@
 
 Tracks the lifecycle of each video upload and processing job. Consumes all four RabbitMQ events and exposes endpoints so users can query current processing status.
 
+![FIAP-X platform architecture](docs/architecture.png)
+
+> High-level architecture of the FIAP-X platform — microservices, choreographed saga over RabbitMQ, database-per-service (RDS), object storage (S3), running on EKS and provisioned with Terraform.
+
 ## Technology Stack
 
 - **Java 21** + **Spring Boot 3.5.0**
